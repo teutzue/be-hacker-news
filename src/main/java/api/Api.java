@@ -7,20 +7,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class Api 
-{
+public class Api {
     @Autowired
-    public Api()
-    {
-		System.out.println("hey");
-	}
-    
-    @CrossOrigin(origins = "http://localhost:63342")
-    @RequestMapping("/1")
-    public String echo(@RequestParam(value="echo") String echo)
-    {
-    		return echo;
+    public Api() {
+        System.out.println("hey");
     }
-    
-    
+
+    @CrossOrigin(origins = "http://localhost:63342")
+    @RequestMapping("/test")
+    public String echo(@RequestParam(value = "echo") String echo) {
+        return echo;
+    }
+
+
 }
