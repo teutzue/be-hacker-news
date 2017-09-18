@@ -72,4 +72,11 @@
             <version>2.8.0</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>choir-repo</id>
+            <name>Our Repo</name>
+            <url>http://207.154.216.150:8082/artifactory/libs-release-local</url>
+        </repository>
+    </repositories>
 </project>
