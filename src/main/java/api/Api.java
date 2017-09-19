@@ -13,7 +13,7 @@ public class Api {
         System.out.println("hey");
     }
 
-    @CrossOrigin(origins = "http://localhost:63342")
+    @CrossOrigin
     @RequestMapping("/test")
     public String echo(@RequestParam(value = "echo") String echo) {
         return echo;
