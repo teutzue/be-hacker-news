@@ -11,11 +11,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import datastructures.PostBody;
+import db.neo4j.MyNeo4jMapper;
 import util.StatusMonitor;
 
 @CrossOrigin
 @RestController
 public class Api {
+	
+	private MyNeo4jMapper mapper = new MyNeo4jMapper();
 	
     @Autowired
     public Api() {
@@ -31,6 +34,8 @@ public class Api {
     public String post(@RequestBody PostBody post) {
     	
     		StatusMonitor.setLastPostId(post.getHanesst_id());
+    		mapper.persistPost(post);
+    		System.out.println("Last post it:"+StatusMonitor.getLastPostId());
     		return (post.getPost_parent()+" "+ post.getPost_url()+" "+ post.getUsername()+" "+ StatusMonitor.getLastPostId());
     	//	return "Ok";
     }

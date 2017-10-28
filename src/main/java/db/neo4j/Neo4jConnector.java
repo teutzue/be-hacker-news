@@ -8,7 +8,7 @@ import org.neo4j.driver.v1.Session;
 public class Neo4jConnector {
     private String userName = "neo4j";
     private String password = "qwerty";
-    private String url = "bolt://127.0.0.1:7474";
+    private String url = "bolt://127.0.0.1:7687";
 
     private Driver neo4jDataSource = null;
 

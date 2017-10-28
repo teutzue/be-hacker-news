@@ -17,6 +17,8 @@ public class PostBody {
 	private Integer post_parent;
 	private Integer hanesst_id;
 	private String post_text;
+	
+	
 	public String getUsername() {
 		return username;
 	}
