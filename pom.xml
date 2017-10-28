@@ -76,7 +76,7 @@
         <repository>
             <id>choir-repo</id>
     	    <name>Our Repo</name>
-            <url>http://46.101.28.25:8082/artifactory/libs-release-local</url>
+            <url>http://207.154.216.150:8082/artifactory/libs-release-local</url>
         </repository>
     </repositories>
 </project>
