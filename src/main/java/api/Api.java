@@ -1,6 +1,6 @@
 package api;
 
-
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,43 +12,47 @@ import org.springframework.web.bind.annotation.RestController;
 
 import datastructures.PostBody;
 import db.neo4j.MyNeo4jMapper;
+import util.JSONMapper;
 import util.StatusMonitor;
 
 @CrossOrigin
 @RestController
 public class Api {
-	
+
 	private MyNeo4jMapper mapper = new MyNeo4jMapper();
-	
-    @Autowired
-    public Api() {
-        System.out.println("hey");
-    }
+	private JSONMapper jsonmap = new JSONMapper();
 
-    @RequestMapping("/test")
-    public String echo(@RequestParam(value = "echo") String echo) {
-        return echo;
-    }
-    
-    @RequestMapping(path="/post", method=RequestMethod.POST)
-    public String post(@RequestBody PostBody post) {
-    	
-    		StatusMonitor.setLastPostId(post.getHanesst_id());
-    		mapper.persistPost(post);
-    		System.out.println("Last post it:"+StatusMonitor.getLastPostId());
-    		return (post.getPost_parent()+" "+ post.getPost_url()+" "+ post.getUsername()+" "+ StatusMonitor.getLastPostId());
-    	//	return "Ok";
-    }
-    
-    @RequestMapping("/status")
-    public String status() {
-    		return StatusMonitor.getStatus();
-    }
-    
-    @RequestMapping("/latest")
-    public int latest() {
-    		return StatusMonitor.getLastPostId();
-    }
+	@Autowired
+	public Api() {
+	}
 
+	@RequestMapping("/test")
+	public String echo(@RequestParam(value = "echo") String echo) {
+		return echo;
+	}
+
+	@RequestMapping(path = "/post", method = RequestMethod.POST)
+	public String post(@RequestBody String json) {
+
+		PostBody post = jsonmap.jsonToPostBody(json);
+		mapper.persistPost(post);
+		return (post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
+				+ StatusMonitor.getLastPostId());
+	}
+
+	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
+	public List<PostBody> getPosts(@RequestParam(value = "limit") int limit) {
+		return mapper.getPostsLimit(limit);
+	}
+
+	@RequestMapping("/status")
+	public String status() {
+		return StatusMonitor.getStatus();
+	}
+
+	@RequestMapping("/latest")
+	public int latest() {
+		return StatusMonitor.getLastPostId();
+	}
 
 }

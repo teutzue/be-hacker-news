@@ -1,14 +1,12 @@
 package datastructures;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class PostBody {
-//	{"username": "<string>", 
-//		 "post_type": "<string>", 
-//		 "pwd_hash": "<string>", 
-//		 "post_title": "<string>",
-//		 "post_url": "<string>", 
-//		 "post_parent": <int>, 
-//		 "hanesst_id": <int>, 
-//		 "post_text": "<string>"}
+
 	private String username;
 	private String post_type;
 	private String pwd_hash;
