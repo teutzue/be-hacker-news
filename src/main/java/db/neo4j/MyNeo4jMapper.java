@@ -9,15 +9,18 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Values;
+import org.neo4j.driver.v1.exceptions.ClientException;
+import org.neo4j.driver.v1.exceptions.NoSuchRecordException;
 import org.neo4j.driver.v1.types.Node;
 
 import datastructures.PostBody;
+import datastructures.User;
 import util.StatusMonitor;
 
 public class MyNeo4jMapper {
 
 	private Neo4jConnector connector = new Neo4jConnector();
-	private Neo4jQueries queries = new Neo4jQueries();
+	private Neo4jQueryInterface queries = new Neo4jQueries();
 
 	public boolean persistPost(PostBody pb) {
 		Session s = connector.getSession();
@@ -76,5 +79,71 @@ public class MyNeo4jMapper {
 
 		s.close();
 		return list;
+	}
+
+	public boolean addUser(User u) {
+		Session s = connector.getSession();
+		Map<String, Object> map = new HashMap();
+		System.out.println(u.getUser_name() + "sup boi");
+		map.put("user_name", u.getUser_name());
+		map.put("user_pwd", u.getUser_pwd());
+		try {
+		
+		
+		s.run(queries.addUser(), map);
+		s.close();
+		}
+		catch(ClientException e)
+		{
+			//handle it properly
+			System.out.println("halloj");
+			e.printStackTrace();
+			return false;
+		}
+
+		
+
+		return true;
+	}
+
+	public boolean logIn(User u) {
+		// "MATCH (u:User) WHERE u.user_name=\"{user_name}\" and
+		// u.user_pwd=\"{user_pwd}\" return u"
+		Session s = connector.getSession();
+		Map<String, Object> map = new HashMap();
+		System.out.println(u.getUser_name() + "sup boi");
+		map.put("user_name", u.getUser_name());
+		map.put("user_pwd", u.getUser_pwd());
+
+		StatementResult result = s.run(queries.logIn(), map);
+
+		Record record=null;
+		try {
+			record = result.single();
+		}
+		catch(NoSuchRecordException e) {
+			s.close();
+			e.printStackTrace();
+			return false;
+		}
+		
+
+		Node n = record.get("u").asNode();
+		Map resultMap = n.asMap();
+
+		u.setUser_name((String) resultMap.get("user_name"));
+
+		u.setUser_pwd((String) resultMap.get("user_pwd"));
+		
+		if (!u.getUser_name().equals(null) && !u.getUser_pwd().equals(null)) {
+			s.close();
+			return true;
+		}
+		
+		
+
+
+		s.close();
+		return false;
 	}
 }

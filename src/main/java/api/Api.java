@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import datastructures.PostBody;
+import datastructures.User;
 import db.neo4j.MyNeo4jMapper;
 import util.JSONMapper;
 import util.StatusMonitor;
@@ -43,6 +44,18 @@ public class Api {
 	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
 	public List<PostBody> getPosts(@RequestParam(value = "limit") int limit) {
 		return mapper.getPostsLimit(limit);
+	}
+	
+	@RequestMapping(path = "/addUser", method = RequestMethod.POST)
+	public boolean addUser(@RequestBody String json) {
+		User u = jsonmap.jsonToUser(json);
+		return mapper.addUser(u);
+	}
+	
+	@RequestMapping(path = "/logIn", method = RequestMethod.POST)
+	public boolean logIn(@RequestBody String json) {
+		User u = jsonmap.jsonToUser(json);
+		return mapper.logIn(u);
 	}
 
 	@RequestMapping("/status")
