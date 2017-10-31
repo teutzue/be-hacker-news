@@ -1,6 +1,7 @@
-FROM eguahlak/glassfish-cph
-MAINTAINER AKA RHP
 
-COPY ./target/*.war /opt/glassfish4/glassfish/domains/domain1/autodeploy/SampleBackend.war
+FROM openjdk:8-jdk-alpine
+VOLUME /tmp
+COPY target/samplebackend-0.0.1-SNAPSHOT.jar app.jar
+ENV JAVA_OPTS=""
+ENTRYPOINT exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar
 
-CMD [ "asadmin", "start-domain", "-v" ]
