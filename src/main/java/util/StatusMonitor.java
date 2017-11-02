@@ -4,7 +4,7 @@ public class StatusMonitor {
 
 	private static String status="Alive";
 	private static StatusMonitor sm = new StatusMonitor();
-	private static Integer lastPostId = null;
+	private static Integer lastPostId = 0;
 	
 	private StatusMonitor() {
 		
