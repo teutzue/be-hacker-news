@@ -1,15 +1,23 @@
 package util;
 
-public class StatusMonitor {
+import io.prometheus.client.Counter;
 
+public class StatusMonitor {
 	private static String status="Alive";
 	private static StatusMonitor sm = new StatusMonitor();
 	private static Integer lastPostId = 0;
-	
+
+	static final Counter requests = Counter.build()
+		.name("requests_total").help("Total requests.").register();
+
 	private StatusMonitor() {
-		
+
 	}
-	
+
+	public static void incrementCounter() {
+		requests.inc();
+	}
+
 	public static Integer getLastPostId() {
 		return lastPostId;
 	}
