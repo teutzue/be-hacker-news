@@ -26,8 +26,8 @@ public class Api {
 	}
 
 	@RequestMapping("/test")
-	public String echo(@RequestParam(value = "echo") String echo) {
-		return echo;
+	public String echo() {
+		return "metrics are still fucked up" ;
 	}
 
 	@RequestMapping(path = "/post", method = RequestMethod.POST)
