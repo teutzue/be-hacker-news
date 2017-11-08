@@ -3,6 +3,7 @@ package api;
 import datastructures.PostBody;
 import datastructures.User;
 import db.neo4j.MyNeo4jMapper;
+import io.prometheus.client.Summary;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,35 +33,55 @@ public class Api {
 
 	@RequestMapping(path = "/post", method = RequestMethod.POST)
 	public String post(@RequestBody String json) {
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+	    
 		StatusMonitor.incrementCounter();
 
 		PostBody post = jsonmap.jsonToPostBody(json);
 		mapper.persistPost(post);
+		
+		requestTimer.observeDuration();
 		return (post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
 				+ StatusMonitor.getLastPostId());
 	}
 
 	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
 	public List<PostBody> getPosts(@RequestParam(value = "limit") int limit) {
-        StatusMonitor.incrementCounter();
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		StatusMonitor.incrementCounter();
 
-        return mapper.getPostsLimit(limit);
+		List<PostBody> posts = mapper.getPostsLimit(limit);
+		
+		requestTimer.observeDuration();
+        return posts;
 	}
 	
 	@RequestMapping(path = "/addUser", method = RequestMethod.POST)
 	public boolean addUser(@RequestBody String json) {
-        StatusMonitor.incrementCounter();
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		
+		StatusMonitor.incrementCounter();
 
 		User u = jsonmap.jsonToUser(json);
-		return mapper.addUser(u);
+		
+		boolean b= mapper.addUser(u);
+		
+		requestTimer.observeDuration();
+		return b;
 	}
 	
 	@RequestMapping(path = "/logIn", method = RequestMethod.POST)
 	public boolean logIn(@RequestBody String json) {
-        StatusMonitor.incrementCounter();
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		
+		StatusMonitor.incrementCounter();
 
 		User u = jsonmap.jsonToUser(json);
-		return mapper.logIn(u);
+		boolean logIn=mapper.logIn(u);
+		
+		requestTimer.observeDuration();
+		
+		return logIn;
 	}
 
 	@RequestMapping("/status")
