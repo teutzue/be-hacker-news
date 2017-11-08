@@ -1,6 +1,7 @@
 package util;
 
 import io.prometheus.client.Counter;
+import io.prometheus.client.Summary;
 
 public class StatusMonitor {
 	private static String status="Alive";
@@ -9,9 +10,14 @@ public class StatusMonitor {
 
 	static final Counter requests = Counter.build()
 		.name("requests_total").help("Total requests.").register();
+	
+
+	static final Summary requestLatency = Summary.build()
+		     .name("requests_latency_seconds").help("Request latency in seconds.").register();
 
 	private StatusMonitor() {
 
+		
 	}
 
 	public static void incrementCounter() {
@@ -40,6 +46,10 @@ public class StatusMonitor {
 	
 	public static void setUpdate() {
 		status="Update";
+	}
+	
+	public static Summary getRequestlatency() {
+		return requestLatency;
 	}
 	
 	
