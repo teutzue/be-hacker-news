@@ -1,10 +1,7 @@
 package db.neo4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import datastructures.PostBody;
+import datastructures.User;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
@@ -12,10 +9,12 @@ import org.neo4j.driver.v1.Values;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.exceptions.NoSuchRecordException;
 import org.neo4j.driver.v1.types.Node;
-
-import datastructures.PostBody;
-import datastructures.User;
 import util.StatusMonitor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MyNeo4jMapper {
 
@@ -80,6 +79,44 @@ public class MyNeo4jMapper {
 		s.close();
 		return list;
 	}
+
+	public List<PostBody> getPostsBySite(String site) {
+        Session s = connector.getSession();
+        List<PostBody> list = new ArrayList<>();
+
+        StatementResult result = s.run(queries.getPostsBySite(), Values.parameters("site", site));
+
+        while (result.hasNext()) {
+            Record record = result.next();
+            PostBody p = new PostBody();
+		try {
+				Node n = record.get("post").asNode();
+				Map resultMap = n.asMap();
+
+				p.setPost_title((String) resultMap.get("post_title"));
+
+				p.setPost_text((String) resultMap.get("post_text"));
+
+				p.setHanesst_id(Math.toIntExact((Long) resultMap.get("hanesst_id")));
+
+				p.setPost_type((String) resultMap.get("post_type"));
+
+				p.setPost_parent(Math.toIntExact((Long) resultMap.get("post_parent")));
+
+				p.setUsername((String) resultMap.get("username"));
+
+				p.setPwd_hash((String) resultMap.get("pwd_hash"));
+
+				p.setPost_url((String) resultMap.get("post_url"));
+				list.add(p);
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+
+		s.close();
+        return list;
+    }
 
 	public boolean addUser(User u) {
 		Session s = connector.getSession();
