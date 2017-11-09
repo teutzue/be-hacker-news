@@ -2,13 +2,33 @@ package db.neo4j;
 
 public interface Neo4jQueryInterface {
 
-	public String addPost() ;
+	public default String addPostQuery() {
+		return "CREATE (:Post { post_title: {post_title}, \n" + 
+				" post_text: {post_text} , \n" + 
+				" hanesst_id: {hanesst_id}, \n" + 
+				" post_type: {post_type}, \n" + 
+				" post_parent: {post_parent}, \n" + 
+				" username: {username}, \n" + 
+				" pwd_hash: {pwd_hash}, \n" + 
+				" post_url: {post_url}})";
+	}
+	
+	public default String getPostsBySiteQuery() {
 
-	public String getPostsBySite();
-	
-	public String getPostsLimit();
-	
-	public String addUser();
-	
-	public String logIn();
+		return "MATCH (post:Post) WHERE post.post_url CONTAINS {site} RETURN post";
+	}
+
+	public default String getPostsLimitQuery() {
+
+		return "MATCH (post:Post) return post limit {limit}";
+	}
+
+	public default String addUserQuery() {
+
+		return "CREATE (:User {user_name:{user_name}, user_pwd:{user_pwd}})";
+	}
+
+	public default String logInQuery() {
+		return "MATCH (u:User) WHERE u.user_name={user_name} and u.user_pwd={user_pwd} return u";
+	}
 }

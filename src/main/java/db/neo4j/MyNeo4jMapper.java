@@ -1,7 +1,9 @@
 package db.neo4j;
 
-import datastructures.PostBody;
-import datastructures.User;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
@@ -9,178 +11,114 @@ import org.neo4j.driver.v1.Values;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.exceptions.NoSuchRecordException;
 import org.neo4j.driver.v1.types.Node;
+
+import datastructures.PostBody;
+import datastructures.User;
 import util.StatusMonitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class MyNeo4jMapper {
+public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 	private Neo4jConnector connector = new Neo4jConnector();
-	private Neo4jQueryInterface queries = new Neo4jQueries();
+	private Neo4jUtil util = new Neo4jUtil();
 
 	public boolean persistPost(PostBody pb) {
+
 		Session s = connector.getSession();
 
 		Map<String, Object> map = new HashMap();
-		System.out.println(pb.getPost_text() + "sup boi");
+
 		map.put("post_text", pb.getPost_text());
 		map.put("post_title", pb.getPost_title());
 		map.put("hanesst_id", pb.getHanesst_id());
 		map.put("post_type", pb.getPost_type());
-		System.out.println(pb.getPost_type() + " cute post type boi");
 		map.put("post_parent", pb.getPost_parent());
 		map.put("username", pb.getUsername());
 		map.put("pwd_hash", pb.getPwd_hash());
 		map.put("post_url", pb.getPost_url());
 
-		s.run(queries.addPost(), map);
+		s.run(addPostQuery(), map);
 
 		s.close();
 
 		StatusMonitor.setLastPostId(pb.getHanesst_id());
-		return false;
+
+		return true;
 	}
 
 	public List<PostBody> getPostsLimit(int limit) {
 		Session s = connector.getSession();
-		List<PostBody> list = new ArrayList<>();
 
-		StatementResult result = s.run(queries.getPostsLimit(), Values.parameters("limit", limit));
-
-		while (result.hasNext()) {
-			Record record = result.next();
-
-			PostBody p = new PostBody();
-			Node n = record.get("post").asNode();
-			Map resultMap = n.asMap();
-
-			p.setPost_title((String) resultMap.get("post_title"));
-
-			p.setPost_text((String) resultMap.get("post_text"));
-
-			p.setHanesst_id(Math.toIntExact((Long) resultMap.get("hanesst_id")));
-
-			p.setPost_type((String) resultMap.get("post_type"));
-
-			p.setPost_parent(Math.toIntExact((Long) resultMap.get("post_parent")));
-
-			p.setUsername((String) resultMap.get("username"));
-
-			p.setPwd_hash((String) resultMap.get("pwd_hash"));
-
-			p.setPost_url((String) resultMap.get("post_url"));
-			list.add(p);
-
-		}
+		StatementResult result = s.run(getPostsLimitQuery(), Values.parameters("limit", limit));
+		List<PostBody> list = util.castMultiplePostNodesToList(result);
 
 		s.close();
 		return list;
 	}
 
 	public List<PostBody> getPostsBySite(String site) {
-        Session s = connector.getSession();
-        List<PostBody> list = new ArrayList<>();
-
-        StatementResult result = s.run(queries.getPostsBySite(), Values.parameters("site", site));
-
-        while (result.hasNext()) {
-            Record record = result.next();
-            PostBody p = new PostBody();
-		try {
-				Node n = record.get("post").asNode();
-				Map resultMap = n.asMap();
-
-				p.setPost_title((String) resultMap.get("post_title"));
-
-				p.setPost_text((String) resultMap.get("post_text"));
-
-				p.setHanesst_id(Math.toIntExact((Long) resultMap.get("hanesst_id")));
-
-				p.setPost_type((String) resultMap.get("post_type"));
-
-				p.setPost_parent(Math.toIntExact((Long) resultMap.get("post_parent")));
-
-				p.setUsername((String) resultMap.get("username"));
-
-				p.setPwd_hash((String) resultMap.get("pwd_hash"));
-
-				p.setPost_url((String) resultMap.get("post_url"));
-				list.add(p);
-			} catch (Exception e) {
-				System.out.println(e);
-			}
-		}
-
-		s.close();
-        return list;
-    }
-
-	public boolean addUser(User u) {
 		Session s = connector.getSession();
-		Map<String, Object> map = new HashMap();
-		System.out.println(u.getUser_name() + "sup boi");
-		map.put("user_name", u.getUser_name());
-		map.put("user_pwd", u.getUser_pwd());
-		try {
-		
-		
-		s.run(queries.addUser(), map);
+
+		StatementResult result = s.run(getPostsBySiteQuery(), Values.parameters("site", site));
+		List<PostBody> list = util.castMultiplePostNodesToList(result);
+
 		s.close();
-		}
-		catch(ClientException e)
-		{
-			//handle it properly
-			System.out.println("halloj");
-			e.printStackTrace();
-			return false;
-		}
-
-		
-
-		return true;
+		return list;
 	}
 
-	public boolean logIn(User u) {
-		// "MATCH (u:User) WHERE u.user_name=\"{user_name}\" and
-		// u.user_pwd=\"{user_pwd}\" return u"
+	public User addUser(User u) {
+
 		Session s = connector.getSession();
 		Map<String, Object> map = new HashMap();
-		System.out.println(u.getUser_name() + "sup boi");
+
 		map.put("user_name", u.getUser_name());
 		map.put("user_pwd", u.getUser_pwd());
 
-		StatementResult result = s.run(queries.logIn(), map);
+		try {
+			s.run(addUserQuery(), map);
+			s.close();
+		} catch (ClientException e) {
+			// handle it properly
+			System.out.println("halloj");
+			e.printStackTrace();
+			return null;
+		}
 
-		Record record=null;
+		return u;
+	}
+
+	public User logIn(User u) {
+
+		Session s = connector.getSession();
+		Map<String, Object> map = new HashMap<String, Object>();
+
+		map.put("user_name", u.getUser_name());
+		map.put("user_pwd", u.getUser_pwd());
+
+		StatementResult result = s.run(logInQuery(), map);
+
+		Record record = null;
 		try {
 			record = result.single();
-		}
-		catch(NoSuchRecordException e) {
+
+		} catch (NoSuchRecordException e) {
 			s.close();
 			e.printStackTrace();
-			return false;
+			return null;
 		}
-		
 
 		Node n = record.get("u").asNode();
-		Map resultMap = n.asMap();
+		Map<?, ?> resultMap = n.asMap();
 
 		u.setUser_name((String) resultMap.get("user_name"));
 
 		u.setUser_pwd((String) resultMap.get("user_pwd"));
-		
+
 		if (!u.getUser_name().equals(null) && !u.getUser_pwd().equals(null)) {
 			s.close();
-			return true;
+			return u;
 		}
-		
-		
-
 
 		s.close();
-		return false;
+		return null;
 	}
 }

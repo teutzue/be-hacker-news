@@ -16,7 +16,6 @@ public class JSONMapper {
 		ObjectMapper om = new ObjectMapper();
 		PostBody pb = null;
 		try {
-			JsonNode jsonNode = om.readTree(json);
 			pb = om.readValue(json, PostBody.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

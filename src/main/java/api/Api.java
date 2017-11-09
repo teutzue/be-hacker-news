@@ -28,18 +28,18 @@ public class Api {
 
 	@RequestMapping("/test")
 	public String echo() {
-		return "metrics are still fucked up" ;
+		return "test call";
 	}
 
 	@RequestMapping(path = "/post", method = RequestMethod.POST)
 	public String post(@RequestBody String json) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
-	    
+
 		StatusMonitor.incrementCounter();
 
 		PostBody post = jsonmap.jsonToPostBody(json);
 		mapper.persistPost(post);
-		
+
 		requestTimer.observeDuration();
 		return (post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
 				+ StatusMonitor.getLastPostId());
@@ -51,68 +51,68 @@ public class Api {
 		StatusMonitor.incrementCounter();
 
 		List<PostBody> posts = mapper.getPostsLimit(limit);
-		
+
 		requestTimer.observeDuration();
-        return posts;
+		return posts;
 	}
 
-    @RequestMapping(path = "/from", method = RequestMethod.GET)
-    public List<PostBody> getPostsBySite(@RequestParam(value = "site") String site) {
-        Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
-        StatusMonitor.incrementCounter();
+	@RequestMapping(path = "/from", method = RequestMethod.GET)
+	public List<PostBody> getPostsBySite(@RequestParam(value = "site") String site) {
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		StatusMonitor.incrementCounter();
 
-        List<PostBody> posts = mapper.getPostsBySite(site);
+		List<PostBody> posts = mapper.getPostsBySite(site);
 
-        requestTimer.observeDuration();
-        return posts;
-    }
-	
+		requestTimer.observeDuration();
+		return posts;
+	}
+
 	@RequestMapping(path = "/addUser", method = RequestMethod.POST)
-	public boolean addUser(@RequestBody String json) {
+	public User addUser(@RequestBody String json) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
-		
+
 		StatusMonitor.incrementCounter();
 
 		User u = jsonmap.jsonToUser(json);
-		
-		boolean b= mapper.addUser(u);
-		
+
+		User addedUser = mapper.addUser(u);
+
 		requestTimer.observeDuration();
-		return b;
+		return addedUser;
 	}
-	
+
 	@RequestMapping(path = "/logIn", method = RequestMethod.POST)
-	public boolean logIn(@RequestBody String json) {
+	public User logIn(@RequestBody String json) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
-		
+
 		StatusMonitor.incrementCounter();
 
 		User u = jsonmap.jsonToUser(json);
-		boolean logIn=mapper.logIn(u);
-		
+		User loggedUser = mapper.logIn(u);
+
 		requestTimer.observeDuration();
-		
-		return logIn;
+
+		return loggedUser;
 	}
 
 	@RequestMapping("/status")
 	public String status() {
-        StatusMonitor.incrementCounter();
+		StatusMonitor.incrementCounter();
 
 		return StatusMonitor.getStatus();
 	}
 
 	@RequestMapping("/latest")
 	public int latest() {
-        StatusMonitor.incrementCounter();
+		StatusMonitor.incrementCounter();
 
 		return StatusMonitor.getLastPostId();
 	}
 
-    @Bean
-    ServletRegistrationBean servletRegistrationBean() {
-        DefaultExports.initialize();
-        return new ServletRegistrationBean(new MetricsServlet(), "/metrics");
-    }
+	@Bean
+	ServletRegistrationBean servletRegistrationBean() {
+		DefaultExports.initialize();
+		return new ServletRegistrationBean(new MetricsServlet(), "/metrics");
+	}
 
 }
