@@ -21,6 +21,12 @@ public class Neo4jQueries implements Neo4jQueryInterface {
 	}
 
 	@Override
+	public String getPostsBySite() {
+
+        return "MATCH (post:Post) WHERE post.post_url CONTAINS {site} RETURN post";
+    }
+
+	@Override
 	public String addUser() {
 		
 		return "CREATE (:User {user_name:{user_name}, user_pwd:{user_pwd}})";

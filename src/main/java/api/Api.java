@@ -55,6 +55,17 @@ public class Api {
 		requestTimer.observeDuration();
         return posts;
 	}
+
+    @RequestMapping(path = "/from", method = RequestMethod.GET)
+    public List<PostBody> getPostsBySite(@RequestParam(value = "site") String site) {
+        Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+        StatusMonitor.incrementCounter();
+
+        List<PostBody> posts = mapper.getPostsBySite(site);
+
+        requestTimer.observeDuration();
+        return posts;
+    }
 	
 	@RequestMapping(path = "/addUser", method = RequestMethod.POST)
 	public boolean addUser(@RequestBody String json) {
