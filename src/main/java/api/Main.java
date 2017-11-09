@@ -10,7 +10,7 @@ public class Main
 {
 	public static void main(String[] args) throws IOException 
     {
-       // ApplicationContext context = new ClassPathXmlApplicationContext("file:src/main/resources/Beans.xml");
+		
 		new SpringApplication(Main.class).run(args);
 		System.out.println();
 		System.out.println("----------------Application is ready------------------");

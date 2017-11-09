@@ -1,9 +1,8 @@
 package datastructures;
 
-import java.io.IOException;
+import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.neo4j.driver.v1.types.Node;
 
 public class PostBody {
 
@@ -15,58 +14,93 @@ public class PostBody {
 	private Integer post_parent;
 	private Integer hanesst_id;
 	private String post_text;
-	
-	
+
+	public PostBody(Node n) {
+		Map resultMap = n.asMap();
+
+		setPost_title((String) resultMap.get("post_title"));
+
+		setPost_text((String) resultMap.get("post_text"));
+
+		setHanesst_id(Math.toIntExact((Long) resultMap.get("hanesst_id")));
+
+		setPost_type((String) resultMap.get("post_type"));
+
+		setPost_parent(Math.toIntExact((Long) resultMap.get("post_parent")));
+
+		setUsername((String) resultMap.get("username"));
+
+		setPwd_hash((String) resultMap.get("pwd_hash"));
+
+		setPost_url((String) resultMap.get("post_url"));
+	}
+
+	public PostBody() {
+
+	}
+
 	public String getUsername() {
 		return username;
 	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
 	public String getPost_type() {
 		return post_type;
 	}
+
 	public void setPost_type(String post_type) {
 		this.post_type = post_type;
 	}
+
 	public String getPwd_hash() {
 		return pwd_hash;
 	}
+
 	public void setPwd_hash(String pwd_hash) {
 		this.pwd_hash = pwd_hash;
 	}
+
 	public String getPost_title() {
 		return post_title;
 	}
+
 	public void setPost_title(String post_title) {
 		this.post_title = post_title;
 	}
+
 	public String getPost_url() {
 		return post_url;
 	}
+
 	public void setPost_url(String post_url) {
 		this.post_url = post_url;
 	}
+
 	public Integer getPost_parent() {
 		return post_parent;
 	}
+
 	public void setPost_parent(Integer post_parent) {
 		this.post_parent = post_parent;
 	}
+
 	public Integer getHanesst_id() {
 		return hanesst_id;
 	}
+
 	public void setHanesst_id(Integer hanesst_id) {
 		this.hanesst_id = hanesst_id;
 	}
+
 	public String getPost_text() {
 		return post_text;
 	}
+
 	public void setPost_text(String post_text) {
 		this.post_text = post_text;
 	}
-	
-	
-	
-	
+
 }
