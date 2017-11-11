@@ -9,6 +9,7 @@ import io.prometheus.client.hotspot.DefaultExports;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import util.JSONMapper;
 import util.StatusMonitor;
@@ -32,17 +33,21 @@ public class Api {
 	}
 
 	@RequestMapping(path = "/post", method = RequestMethod.POST)
-	public String post(@RequestBody String json) {
-		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+	public ResponseEntity<String> post(@RequestBody String json) {
+		if (StatusMonitor.isOperational()) {
+			Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 
-		StatusMonitor.incrementCounter();
+			StatusMonitor.incrementCounter();
 
-		PostBody post = jsonmap.jsonToPostBody(json);
-		mapper.persistPost(post);
+			PostBody post = jsonmap.jsonToPostBody(json);
+			post.setTimestamp(System.currentTimeMillis());
+			mapper.persistPost(post);
 
-		requestTimer.observeDuration();
-		return (post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
-				+ StatusMonitor.getLastPostId());
+			requestTimer.observeDuration();
+			return ResponseEntity.status(201).body((post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
+					+ StatusMonitor.getLastPostId()));
+		}
+		return ResponseEntity.status(423).body("Application is under update");
 	}
 
 	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
@@ -69,16 +74,19 @@ public class Api {
 
 	@RequestMapping(path = "/addUser", method = RequestMethod.POST)
 	public User addUser(@RequestBody String json) {
-		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		if (StatusMonitor.isOperational()) {
+			Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 
-		StatusMonitor.incrementCounter();
+			StatusMonitor.incrementCounter();
 
-		User u = jsonmap.jsonToUser(json);
+			User u = jsonmap.jsonToUser(json);
 
-		User addedUser = mapper.addUser(u);
+			User addedUser = mapper.addUser(u);
 
-		requestTimer.observeDuration();
-		return addedUser;
+			requestTimer.observeDuration();
+			return addedUser;
+		}
+		return null;
 	}
 
 	@RequestMapping(path = "/logIn", method = RequestMethod.POST)
@@ -108,6 +116,21 @@ public class Api {
 
 		return StatusMonitor.getLastPostId();
 	}
+	
+	@RequestMapping("/changeStatus/update")
+	public boolean setUpdate() {
+
+		StatusMonitor.setUpdate();
+		return true;
+	}
+	
+	@RequestMapping("/changeStatus/alive")
+	public boolean setAlive() {
+
+		StatusMonitor.setAlive();
+		return true;
+	}
+	
 
 	@Bean
 	ServletRegistrationBean servletRegistrationBean() {

@@ -16,13 +16,14 @@ public class Main {
 //		System.out.println(nc.getSession().isOpen());
 //		s.close();
 		
-		MyNeo4jMapper mapper = new MyNeo4jMapper();
-		User u = new User();
-		u.setUser_name("adammm");
-		u.setUser_pwd("adammm");
-	//	u.setUser_name("dude64");
-	//	u.setUser_pwd("mude");
-		System.out.println(mapper.logIn(u));
+//		MyNeo4jMapper mapper = new MyNeo4jMapper();
+//		User u = new User();
+//		u.setUser_name("adammm");
+//		u.setUser_pwd("adammm");
+//	//	u.setUser_name("dude64");
+//	//	u.setUser_pwd("mude");
+//		System.out.println(mapper.logIn(u));
+		System.out.println(System.currentTimeMillis());
 		
 		
 

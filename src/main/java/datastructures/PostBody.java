@@ -14,8 +14,10 @@ public class PostBody {
 	private Integer post_parent;
 	private Integer hanesst_id;
 	private String post_text;
+	private Long timestamp;
 
 	public PostBody(Node n) {
+		
 		Map resultMap = n.asMap();
 
 		setPost_title((String) resultMap.get("post_title"));
@@ -33,6 +35,8 @@ public class PostBody {
 		setPwd_hash((String) resultMap.get("pwd_hash"));
 
 		setPost_url((String) resultMap.get("post_url"));
+		
+		timestamp=((Long) resultMap.get("timestamp"));
 	}
 
 	public PostBody() {
@@ -101,6 +105,14 @@ public class PostBody {
 
 	public void setPost_text(String post_text) {
 		this.post_text = post_text;
+	}
+	
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
+	}
+	
+	public Long getTimestamp() {
+		return timestamp;
 	}
 
 }
