@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
@@ -12,6 +14,7 @@ import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.exceptions.NoSuchRecordException;
 import org.neo4j.driver.v1.types.Node;
 
+import api.Api;
 import datastructures.PostBody;
 import datastructures.User;
 import util.StatusMonitor;
@@ -20,6 +23,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 	private Neo4jConnector connector = new Neo4jConnector();
 	private Neo4jUtil util = new Neo4jUtil();
+	private static final Logger logger = LogManager.getLogger(MyNeo4jMapper.class);
 
 	public boolean persistPost(PostBody pb) {
 
@@ -35,20 +39,21 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		map.put("username", pb.getUsername());
 		map.put("pwd_hash", pb.getPwd_hash());
 		map.put("post_url", pb.getPost_url());
-		System.out.println(pb.getTimestamp());
 		map.put("timestamp", pb.getTimestamp());
 
 		s.run(addPostQuery(), map);
-
 		s.close();
 
 		StatusMonitor.setLastPostId(pb.getHanesst_id());
+		logger.info("Post: "+pb.getPost_title()+" of user "+pb.getUsername()+" has been created successfully");
+		
 
 		return true;
 	}
 
 	public List<PostBody> getPostsLimit(int limit) {
 		Session s = connector.getSession();
+		if (limit>=9999) logger.warn("Very heavy request");
 
 		StatementResult result = s.run(getPostsLimitQuery(), Values.parameters("limit", limit));
 		List<PostBody> list = util.castMultiplePostNodesToList(result);
@@ -78,10 +83,11 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		try {
 			s.run(addUserQuery(), map);
 			s.close();
+			logger.info("User "+u.getUser_name()+" has been created");
 		} catch (ClientException e) {
 			// handle it properly
-			System.out.println("halloj");
-			e.printStackTrace();
+			logger.error(e+" "+e.code());
+			
 			return null;
 		}
 

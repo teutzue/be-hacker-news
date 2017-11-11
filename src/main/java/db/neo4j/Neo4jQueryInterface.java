@@ -16,12 +16,12 @@ public interface Neo4jQueryInterface {
 	
 	public default String getPostsBySiteQuery() {
 
-		return "MATCH (post:Post) WHERE post.post_url CONTAINS {site} RETURN post";
+		return "MATCH (post:Post) WHERE post.post_url CONTAINS {site} RETURN post order by post.timestamp";
 	}
 
 	public default String getPostsLimitQuery() {
 
-		return "MATCH (post:Post) return post limit {limit}";
+		return "MATCH (post:Post) return post order by post.timestamp limit {limit} ";
 	}
 
 	public default String addUserQuery() {
