@@ -10,7 +10,8 @@ public interface Neo4jQueryInterface {
 				" post_parent: {post_parent}, \n" + 
 				" username: {username}, \n" + 
 				" pwd_hash: {pwd_hash}, \n" + 
-				" post_url: {post_url}})";
+				" post_url: {post_url},"
+				+ "timestamp: {timestamp}})";
 	}
 	
 	public default String getPostsBySiteQuery() {

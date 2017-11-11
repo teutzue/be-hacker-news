@@ -35,6 +35,8 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		map.put("username", pb.getUsername());
 		map.put("pwd_hash", pb.getPwd_hash());
 		map.put("post_url", pb.getPost_url());
+		System.out.println(pb.getTimestamp());
+		map.put("timestamp", pb.getTimestamp());
 
 		s.run(addPostQuery(), map);
 
