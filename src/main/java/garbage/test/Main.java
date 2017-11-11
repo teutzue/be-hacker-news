@@ -23,7 +23,8 @@ public class Main {
 //	//	u.setUser_name("dude64");
 //	//	u.setUser_pwd("mude");
 //		System.out.println(mapper.logIn(u));
-		System.out.println(System.currentTimeMillis());
+		Long l =System.currentTimeMillis();
+		System.out.println(l);
 		
 		
 

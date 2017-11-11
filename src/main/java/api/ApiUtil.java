@@ -24,20 +24,18 @@ public class ApiUtil {
 
 		return valid;
 	}
-	
+
 	public boolean validateUser(User u) {
 		boolean valid = true;
-		
-		if (u.getUser_name() == null || u.getUser_name().equals(""))
-		{
+
+		if (u.getUser_name() == null || u.getUser_name().equals("")) {
 			return false;
 		}
-			
-		if (u.getUser_pwd() == null || u.getUser_pwd().equals(""))
-		{
+
+		if (u.getUser_pwd() == null || u.getUser_pwd().equals("")) {
 			return false;
 		}
-		
+
 		return valid;
 	}
 }

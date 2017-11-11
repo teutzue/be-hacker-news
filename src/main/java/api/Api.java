@@ -1,20 +1,28 @@
 package api;
 
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import datastructures.PostBody;
 import datastructures.User;
 import db.neo4j.MyNeo4jMapper;
 import io.prometheus.client.Summary;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import util.JSONMapper;
 import util.StatusMonitor;
-
-import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -23,6 +31,8 @@ public class Api {
 	private MyNeo4jMapper mapper = new MyNeo4jMapper();
 	private JSONMapper jsonmap = new JSONMapper();
 	private ApiUtil util = new ApiUtil();
+	
+    private static final Logger logger = LogManager.getLogger(Api.class);
 
 	@Autowired
 	public Api() {
@@ -30,6 +40,7 @@ public class Api {
 
 	@RequestMapping("/test")
 	public String echo() {
+		logger.trace("holy shit - I'm logging");
 		return "test call";
 	}
 
@@ -48,7 +59,8 @@ public class Api {
 			post.setTimestamp(System.currentTimeMillis());
 			mapper.persistPost(post);
 
-			requestTimer.observeDuration();
+			// When you refactor method name. Change middle parameter of checkSpeed too
+			checkSpeed(requestTimer.observeDuration(),"post", json);
 			return ResponseEntity.status(201).body((post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
 					+ StatusMonitor.getLastPostId()));
 		}
@@ -61,8 +73,8 @@ public class Api {
 		StatusMonitor.incrementCounter();
 
 		List<PostBody> posts = mapper.getPostsLimit(limit);
-
-		requestTimer.observeDuration();
+		// When you refactor method name. Change middle parameter of checkSpeed too
+		checkSpeed(requestTimer.observeDuration(),"getPosts", limit);
 		return posts;
 	}
 
@@ -73,7 +85,8 @@ public class Api {
 
 		List<PostBody> posts = mapper.getPostsBySite(site);
 
-		requestTimer.observeDuration();
+		// When you refactor method name. Change middle parameter of checkSpeed too
+		checkSpeed(requestTimer.observeDuration(),"getPostsBySite",site);
 		return posts;
 	}
 
@@ -96,8 +109,10 @@ public class Api {
 			{
 				return ResponseEntity.status(400).body(u);
 			}
-
-			requestTimer.observeDuration();
+			
+			// When you refactor method name. Change middle parameter of checkSpeed too
+			checkSpeed(requestTimer.observeDuration(),"addUser",json);
+			
 			return ResponseEntity.status(201).body(u);
 		}
 		return ResponseEntity.status(500).body(null);
@@ -112,7 +127,8 @@ public class Api {
 		User u = jsonmap.jsonToUser(json);
 		User loggedUser = mapper.logIn(u);
 
-		requestTimer.observeDuration();
+		// When you refactor method name. Change middle parameter of checkSpeed too
+		checkSpeed(requestTimer.observeDuration(),"logIn", json);
 
 		return loggedUser;
 	}
@@ -135,6 +151,7 @@ public class Api {
 	public boolean setUpdate() {
 
 		StatusMonitor.setUpdate();
+		logger.warn("Status has been changed to update");
 		return true;
 	}
 	
@@ -142,6 +159,7 @@ public class Api {
 	public boolean setAlive() {
 
 		StatusMonitor.setAlive();
+		logger.warn("Status has been changed to alive");
 		return true;
 	}
 	
@@ -150,6 +168,12 @@ public class Api {
 	ServletRegistrationBean servletRegistrationBean() {
 		DefaultExports.initialize();
 		return new ServletRegistrationBean(new MetricsServlet(), "/metrics");
+	}
+	
+	private void checkSpeed(Double speed, String operationName, Object input) {
+		speed=speed*1000;
+		if (speed>300) logger.warn("Speed of "+speed+" ms occured in "+
+				operationName+" with following input: "+input.toString()+". This breaches the SLA of max. 300ms");
 	}
 
 }
