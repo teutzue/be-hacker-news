@@ -20,6 +20,9 @@ public class Neo4jConnector {
 	public Session getSession() {
 
 		return neo4jDataSource.session();
-
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 }

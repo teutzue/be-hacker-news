@@ -36,7 +36,7 @@ public class PostBody {
 
 		setPost_url((String) resultMap.get("post_url"));
 		
-		timestamp=((Long) resultMap.get("timestamp"));
+		timestamp = ((Long) resultMap.get("timestamp"));
 	}
 
 	public PostBody() {
