@@ -20,7 +20,10 @@ public class PostBody {
 		
 		Map resultMap = n.asMap();
 
+		
+		
 		setPost_title((String) resultMap.get("post_title"));
+		System.out.println(this.post_title);
 
 		setPost_text((String) resultMap.get("post_text"));
 
@@ -35,8 +38,9 @@ public class PostBody {
 		setPwd_hash((String) resultMap.get("pwd_hash"));
 
 		setPost_url((String) resultMap.get("post_url"));
+		System.out.println(resultMap.get("timestamp"));
 		
-		timestamp = ((Long) resultMap.get("timestamp"));
+		timestamp = Math.round((((Double) resultMap.get("timestamp"))));
 	}
 
 	public PostBody() {
