@@ -57,7 +57,7 @@ public class Api {
 						+ "post_title, post_type, pwd_hash and username ");
 			}
 			post.setTimestamp(System.currentTimeMillis());
-			System.out.println(post.getTimestamp());
+			
 			mapper.persistPost(post);
 
 			// When you refactor method name. Change middle parameter of checkSpeed too
