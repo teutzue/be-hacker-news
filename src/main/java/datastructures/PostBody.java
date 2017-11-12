@@ -38,7 +38,6 @@ public class PostBody {
 		setPwd_hash((String) resultMap.get("pwd_hash"));
 
 		setPost_url((String) resultMap.get("post_url"));
-		System.out.println(resultMap.get("timestamp"));
 		
 		timestamp = Math.round((((Double) resultMap.get("timestamp"))));
 	}
