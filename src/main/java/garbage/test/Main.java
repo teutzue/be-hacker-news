@@ -24,7 +24,7 @@ public class Main {
 //	//	u.setUser_pwd("mude");
 //		System.out.println(mapper.logIn(u));
 		Long l =System.currentTimeMillis();
-		System.out.println(l);
+		System.out.println(Math.round(l.doubleValue()));
 		
 		
 
