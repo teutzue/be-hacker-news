@@ -13,14 +13,14 @@
 
 	<Loggers>
 		<Root level="INFO">
-			<AppenderRef ref="ConsoleAppender" />
+			<AppenderRef ref="MyFile" />
 		</Root>
 		<logger name="api" level="INFO" additivity="false">
-			<AppenderRef ref="ConsoleAppender" />
+			<AppenderRef ref="MyFile" />
 		</logger>
 		
 		<logger name="db.neo4j" level="INFO" additivity="false">
-			<AppenderRef ref="ConsoleAppender" />
+			<AppenderRef ref="MyFile" />
 		</logger>
 	</Loggers>
 </Configuration>

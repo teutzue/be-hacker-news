@@ -45,7 +45,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		s.close();
 
 		StatusMonitor.setLastPostId(pb.getHanesst_id());
-		logger.info("Post: "+pb.getPost_title()+" of user "+pb.getUsername()+" has been created successfully");
+		//logger.info("Post: "+pb.getPost_title()+" of user "+pb.getUsername()+" has been created successfully");
 		
 
 		return true;
