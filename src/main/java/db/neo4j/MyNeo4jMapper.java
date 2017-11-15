@@ -23,7 +23,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 	private Neo4jConnector connector = new Neo4jConnector();
 	private Neo4jUtil util = new Neo4jUtil();
-	private static final Logger logger = LogManager.getLogger(MyNeo4jMapper.class);
+	private static final Logger logger = LogManager.getLogger("logstash");
 
 	public boolean persistPost(PostBody pb) {
 
@@ -41,6 +41,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		map.put("post_url", pb.getPost_url());
 		map.put("timestamp", pb.getTimestamp().doubleValue());
 		
+		
 		s.run(addPostQuery(), map);
 		s.close();
 
@@ -53,7 +54,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 	public List<PostBody> getPostsLimit(int limit) {
 		Session s = connector.getSession();
-		if (limit>=9999) logger.warn("Very heavy request");
+		if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
 
 		StatementResult result = s.run(getPostsLimitQuery(), Values.parameters("limit", limit));
 		List<PostBody> list = util.castMultiplePostNodesToList(result);
@@ -83,7 +84,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		try {
 			s.run(addUserQuery(), map);
 			s.close();
-			logger.info("User "+u.getUser_name()+" has been created");
+			
 		} catch (ClientException e) {
 			// handle it properly
 			logger.error(e+" "+e.code());
@@ -91,6 +92,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 			return null;
 		}
 
+		logger.info("User "+u.getUser_name()+" has been created");
 		return u;
 	}
 
@@ -123,6 +125,8 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 		if (!u.getUser_name().equals(null) && !u.getUser_pwd().equals(null)) {
 			s.close();
+			
+			logger.info("User "+u.getUser_name()+" has been logged in!");
 			return u;
 		}
 
