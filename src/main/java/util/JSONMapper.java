@@ -14,6 +14,7 @@ public class JSONMapper {
 	
 	public PostBody jsonToPostBody(String json) {
 		ObjectMapper om = new ObjectMapper();
+	
 		PostBody pb = null;
 		try {
 			pb = om.readValue(json, PostBody.class);

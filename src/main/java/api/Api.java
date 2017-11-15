@@ -22,6 +22,7 @@ import io.prometheus.client.Summary;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import util.JSONMapper;
+import util.Log;
 import util.StatusMonitor;
 
 @CrossOrigin
@@ -32,7 +33,7 @@ public class Api {
 	private JSONMapper jsonmap = new JSONMapper();
 	private ApiUtil util = new ApiUtil();
 	
-    private static final Logger logger = LogManager.getLogger(Api.class);
+    private static final Logger logger = LogManager.getLogger("logstash");
 
 	@Autowired
 	public Api() {
@@ -40,7 +41,8 @@ public class Api {
 
 	@RequestMapping("/test")
 	public String echo() {
-		logger.trace("holy shit - I'm logging");
+		
+		logger.info("Logging test call");
 		return "test call";
 	}
 
@@ -59,7 +61,11 @@ public class Api {
 			post.setTimestamp(System.currentTimeMillis());
 			
 			mapper.persistPost(post);
-
+			
+			
+			
+			logger.info("Created post with "+post.getPost_title()+" title and "+post.getHanesst_id()+" id");
+			
 			// When you refactor method name. Change middle parameter of checkSpeed too
 			checkSpeed(requestTimer.observeDuration(),"post", json);
 			return ResponseEntity.status(201).body((post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
@@ -75,6 +81,7 @@ public class Api {
 
 		List<PostBody> posts = mapper.getPostsLimit(limit);
 		// When you refactor method name. Change middle parameter of checkSpeed too
+		
 		checkSpeed(requestTimer.observeDuration(),"getPosts", limit);
 		return posts;
 	}
@@ -114,6 +121,8 @@ public class Api {
 			// When you refactor method name. Change middle parameter of checkSpeed too
 			checkSpeed(requestTimer.observeDuration(),"addUser",json);
 			
+			logger.info("Created user with "+addedUser.getUser_name()+" username");
+			
 			return ResponseEntity.status(201).body(u);
 		}
 		return ResponseEntity.status(500).body(null);
@@ -137,6 +146,8 @@ public class Api {
 	@RequestMapping(path = "/status", method = RequestMethod.GET)
 	public String status() {
 		StatusMonitor.incrementCounter();
+		
+		
 
 		return StatusMonitor.getStatus();
 	}
@@ -152,7 +163,7 @@ public class Api {
 	public boolean setUpdate() {
 
 		StatusMonitor.setUpdate();
-		logger.warn("Status has been changed to update");
+		logger.warn("Status has been changed to update. Somebody might be a dick.");
 		return true;
 	}
 	
@@ -160,7 +171,7 @@ public class Api {
 	public boolean setAlive() {
 
 		StatusMonitor.setAlive();
-		logger.warn("Status has been changed to alive");
+		logger.warn("Status has been changed to alive. Somebody might be a dick");
 		return true;
 	}
 	
