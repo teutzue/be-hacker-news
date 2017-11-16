@@ -18,7 +18,9 @@ public class PostBody {
 
 	public PostBody(Node n) {
 		
-		Map resultMap = n.asMap();		
+		Map resultMap = n.asMap();
+
+		
 		
 		setPost_title((String) resultMap.get("post_title"));
 		System.out.println(this.post_title);
