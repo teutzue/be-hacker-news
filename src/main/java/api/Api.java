@@ -55,6 +55,7 @@ public class Api {
 			PostBody post = jsonmap.jsonToPostBody(json);
 			if (!util.validatePost(post)) {
 				requestTimer.observeDuration();
+				logger.warn("This request is wrong: "+json);
 				return ResponseEntity.status(400).body("Request is invalid. Check Hanesst_id, post_parent, "
 						+ "post_title, post_type, pwd_hash and username ");
 			}
