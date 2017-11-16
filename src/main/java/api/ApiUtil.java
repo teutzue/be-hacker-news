@@ -9,8 +9,8 @@ public class ApiUtil {
 		boolean valid = true;
 		if (pb.getPost_parent() == null)
 			return false;
-		if (pb.getPost_title() == null || pb.getPost_title().equals(""))
-			return false;
+//		if (pb.getPost_title() == null || pb.getPost_title().equals(""))
+//			return false;
 		if (pb.getPost_parent() == null)
 			return false;
 		if (pb.getPost_type() == null || pb.getPost_type().equals(""))
