@@ -21,7 +21,7 @@ public interface Neo4jQueryInterface {
 
 	public default String getPostsLimitQuery() {
 
-		return "MATCH (post:Post) return post order by post.timestamp desc limit {limit} ";
+		return "MATCH (post:Post) where post.post_parent = -1 return post order by post.timestamp desc limit {limit} ";
 	}
 
 	public default String addUserQuery() {

@@ -41,13 +41,13 @@ public class PostValidatorTests {
 		assertTrue(!util.validatePost(pb));
 	}
 
-	@Test
-	public void validateNoPostTitlePost() {
-		pb.setPost_title(null);
-		assertTrue(!util.validatePost(pb));
-		pb.setPost_title("");
-		assertTrue(!util.validatePost(pb));
-	}
+//	@Test
+//	public void validateNoPostTitlePost() {
+//		pb.setPost_title(null);
+//		assertTrue(!util.validatePost(pb));
+//		pb.setPost_title("");
+//		assertTrue(!util.validatePost(pb));
+//	}
 
 	@Test
 	public void validateNoPostType() {
