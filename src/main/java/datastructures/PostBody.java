@@ -19,8 +19,6 @@ public class PostBody {
 	public PostBody(Node n) {
 		
 		Map resultMap = n.asMap();
-
-		
 		
 		setPost_title((String) resultMap.get("post_title"));
 		System.out.println(this.post_title);
@@ -117,5 +115,14 @@ public class PostBody {
 	public Long getTimestamp() {
 		return timestamp;
 	}
+
+	@Override
+	public String toString() {
+		return "PostBody [username=" + username + ", post_type=" + post_type + ", pwd_hash=" + pwd_hash
+				+ ", post_title=" + post_title + ", post_url=" + post_url + ", post_parent=" + post_parent
+				+ ", hanesst_id=" + hanesst_id + ", post_text=" + post_text + ", timestamp=" + timestamp + "]";
+	}
+	
+	
 
 }
