@@ -22,7 +22,6 @@ import io.prometheus.client.Summary;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import util.JSONMapper;
-import util.Log;
 import util.StatusMonitor;
 
 @CrossOrigin
@@ -39,11 +38,11 @@ public class Api {
 	public Api() {
 	}
 
-	@RequestMapping("/test")
+	@RequestMapping("/java")
 	public String echo() {
 		
-		logger.info("Logging test call");
-		return "test call";
+		logger.info("Logging java call");
+		return "java call";
 	}
 
 	@RequestMapping(path = "/post", method = RequestMethod.POST)

@@ -1,4 +1,3 @@
-package test;
 
 import static org.junit.Assert.assertTrue;
 
@@ -8,7 +7,7 @@ import org.junit.Test;
 import api.ApiUtil;
 import datastructures.User;
 
-public class UserValidatorTests {
+public class UserValidatorTest {
 
 	User u = new User();
 	ApiUtil util = new ApiUtil();
