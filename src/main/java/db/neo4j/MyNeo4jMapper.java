@@ -1,10 +1,8 @@
 package db.neo4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import datastructures.Post;
+import datastructures.PostBody;
+import datastructures.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.neo4j.driver.v1.Record;
@@ -14,11 +12,12 @@ import org.neo4j.driver.v1.Values;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.exceptions.NoSuchRecordException;
 import org.neo4j.driver.v1.types.Node;
-
-import datastructures.Post;
-import datastructures.PostBody;
-import datastructures.User;
 import util.StatusMonitor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MyNeo4jMapper implements Neo4jQueryInterface {
 
@@ -112,16 +111,27 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		}
 	}
 
-	public List<PostBody> getPostsLimit(int limit) {
-		Session s = connector.getSession();
-		if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
+    public List<PostBody> getPostsLimit(int skip, int limit) {
+        Session s = connector.getSession();
+        if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
 
-		StatementResult result = s.run(getPostsLimitQuery(limit));
-		List<PostBody> list = util.castMultiplePostNodesToList(result);
+        StatementResult result = s.run(getPostsLimitQuery(skip, limit));
+        List<PostBody> list = util.castMultiplePostNodesToList(result);
 
-		s.close();
-		return list;
-	}
+        s.close();
+        return list;
+    }
+
+    public List<PostBody> getPostsLimit(int limit) {
+        Session s = connector.getSession();
+        if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
+
+        StatementResult result = s.run(getPostsLimitQuery(limit));
+        List<PostBody> list = util.castMultiplePostNodesToList(result);
+
+        s.close();
+        return list;
+    }
 
 	public List<PostBody> getPostsBySite(String site) {
 		Session s = connector.getSession();

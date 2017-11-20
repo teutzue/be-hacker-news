@@ -29,9 +29,14 @@ public interface Neo4jQueryInterface {
 		return "MATCH (post:Post) WHERE post.post_url CONTAINS {site} RETURN post order by post.timestamp desc";
 	}
 
+	public default String getPostsLimitQuery(Integer skip, Integer limit) {
+
+		return "MATCH (post:Post) WHERE post.post_parent = -1 RETURN post ORDER BY post.timestamp desc SKIP " + skip + " LIMIT " + limit;
+	}
+
 	public default String getPostsLimitQuery(Integer limit) {
 
-		return "MATCH (post:Post) where post.post_parent = -1 return post order by post.timestamp desc limit "+limit;
+		return "MATCH (post:Post) WHERE post.post_parent = -1 RETURN post ORDER BY post.timestamp desc LIMIT " + limit;
 	}
 
 	public default String addUserQuery() {
