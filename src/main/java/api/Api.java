@@ -1,28 +1,22 @@
 package api;
 
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import datastructures.PostBody;
 import datastructures.User;
 import db.neo4j.MyNeo4jMapper;
 import io.prometheus.client.Summary;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import util.JSONMapper;
 import util.StatusMonitor;
+
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -40,7 +34,6 @@ public class Api {
 
 	@RequestMapping("/java")
 	public String echo() {
-		
 		logger.info("Logging java call");
 		return "java call";
 	}
@@ -61,30 +54,52 @@ public class Api {
 			post.setTimestamp(System.currentTimeMillis());
 			
 			mapper.persistPost(post);
-			
-			
-			
+
 			logger.info("Created post with "+post.getPost_title()+" title and "+post.getHanesst_id()+" id");
 			
-			// When you refactor method name. Change middle parameter of checkSpeed too
-			checkSpeed(requestTimer.observeDuration(),"post", json);
+            String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+            checkSpeed(requestTimer.observeDuration(),methodName, json);
 			return ResponseEntity.status(201).body((post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
 					+ StatusMonitor.getLastPostId()));
 		}
 		return ResponseEntity.status(423).body("Application is under update");
 	}
 
-	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
-	public List<PostBody> getPosts(@RequestParam(value = "limit") int limit) {
+	// @todo: Change path name
+	@RequestMapping(path = "/getPostsNew", method = RequestMethod.GET)
+	public List<PostBody> getPosts(
+            @RequestParam(value = "page") int page,
+			@RequestParam(value = "limit") int limit) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 		StatusMonitor.incrementCounter();
 
-		List<PostBody> posts = mapper.getPostsLimit(limit);
-		// When you refactor method name. Change middle parameter of checkSpeed too
-		
-		checkSpeed(requestTimer.observeDuration(),"getPosts", limit);
+		/*
+        When page is 0, then we skip 0 posts.
+        Otherwise we skip multiplicity of limit posts (by default 30 posts are shown at once)
+        */
+        int skip = limit * page;
+
+        List<PostBody> posts = mapper.getPostsLimit(skip, limit);
+
+        String input = "{page: "+ page + ", limit: " + limit + "}";
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName, input);
 		return posts;
 	}
+
+    // @todo: To be removed. This will be deprecated after the frontend start using the above endpoint.
+    @RequestMapping(path = "/getPosts", method = RequestMethod.GET)
+    public List<PostBody> getPosts(
+            @RequestParam(value = "limit") int limit) {
+        Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+        StatusMonitor.incrementCounter();
+
+        List<PostBody> posts = mapper.getPostsLimit(limit);
+
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName, limit);
+        return posts;
+    }
 
 	@RequestMapping(path = "/from", method = RequestMethod.GET)
 	public List<PostBody> getPostsBySite(@RequestParam(value = "site") String site) {
@@ -93,8 +108,8 @@ public class Api {
 
 		List<PostBody> posts = mapper.getPostsBySite(site);
 
-		// When you refactor method name. Change middle parameter of checkSpeed too
-		checkSpeed(requestTimer.observeDuration(),"getPostsBySite",site);
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName,site);
 		return posts;
 	}
 
@@ -118,8 +133,8 @@ public class Api {
 				return ResponseEntity.status(400).body(u);
 			}
 			
-			// When you refactor method name. Change middle parameter of checkSpeed too
-			checkSpeed(requestTimer.observeDuration(),"addUser",json);
+            String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+            checkSpeed(requestTimer.observeDuration(),methodName,json);
 			
 			logger.info("Created user with "+addedUser.getUser_name()+" username");
 			
@@ -137,8 +152,8 @@ public class Api {
 		User u = jsonmap.jsonToUser(json);
 		User loggedUser = mapper.logIn(u);
 
-		// When you refactor method name. Change middle parameter of checkSpeed too
-		checkSpeed(requestTimer.observeDuration(),"logIn", json);
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName, json);
 
 		return loggedUser;
 	}
