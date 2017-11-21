@@ -1,4 +1,3 @@
-package test;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -9,7 +8,7 @@ import org.junit.Test;
 import api.ApiUtil;
 import datastructures.PostBody;
 
-public class PostValidatorTests {
+public class PostValidatorTest {
 
 	PostBody pb = new PostBody();
 	ApiUtil util = new ApiUtil();

@@ -32,11 +32,10 @@ public class Api {
 	public Api() {
 	}
 
-	@RequestMapping("/test")
+	@RequestMapping("/java")
 	public String echo() {
-
-        logger.info("Logging test call");
-		return "test call";
+		logger.info("Logging java call");
+		return "java call";
 	}
 
 	@RequestMapping(path = "/post", method = RequestMethod.POST)
