@@ -1,4 +1,4 @@
-package datastructures;
+package post;
 
 import java.util.ArrayList;
 import java.util.List;

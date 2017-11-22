@@ -7,7 +7,7 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.types.Node;
 
-import datastructures.PostBody;
+import datastructures.post.PostBody;
 
 public class Neo4jUtil {
 

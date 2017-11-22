@@ -1,4 +1,4 @@
-package datastructures;
+package post;
 
 import java.util.Map;
 

@@ -29,14 +29,24 @@ public interface Neo4jQueryInterface {
 		return "MATCH (post:Post) WHERE post.post_url CONTAINS {site} RETURN post order by post.timestamp desc";
 	}
 
+	//To be phased out
 	public default String getPostsLimitQuery(Integer skip, Integer limit) {
 
 		return "MATCH (post:Post) WHERE post.post_parent = -1 RETURN post ORDER BY post.timestamp desc SKIP " + skip + " LIMIT " + limit;
 	}
-
+	//To be phased out
 	public default String getPostsLimitQuery(Integer limit) {
 
 		return "MATCH (post:Post) WHERE post.post_parent = -1 RETURN post ORDER BY post.timestamp desc LIMIT " + limit;
+	}
+	
+	//Right One
+	public default String getPostsLimitNewQuery(Integer skip, Integer limit) {
+
+		return "Match (par:Post{post_parent:-1}) \n" + 
+				"       with par ORDER BY par.timestamp desc skip "+skip+" limit "+limit+"\n" + 
+				"       with par\n" + 
+				"        return par as post, size((par)-[:Parent *1..]->()) as numberOfcomments;";
 	}
 
 	public default String addUserQuery() {
@@ -51,6 +61,11 @@ public interface Neo4jQueryInterface {
 	public default String getCommentsQuery(int hanesst_id) {
 		return "MATCH (parent:Post{hanesst_id:"+hanesst_id+"})-[:Parent *1..]->(child:Post) "
 				+ "return parent as story,collect(child) as comments, count(child) as numberOfcomments";
+	}
+	
+	public default String getPostAndCommentsCountQuery(int hanesst_id) {
+		return "MATCH (parent:Post{hanesst_id:"+hanesst_id+"})-[:Parent *1..]->(child:Post) "
+				+ "return parent as story,collect(child) as comments, count(child) as numberOfcomments ;";
 	}
 	
 	public default String generateHanesst_idQuery() {
