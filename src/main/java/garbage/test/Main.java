@@ -1,6 +1,6 @@
 package garbage.test;
 
-import datastructures.PostBody;
+import datastructures.post.PostBody;
 import db.neo4j.MyNeo4jMapper;
 
 public class Main {

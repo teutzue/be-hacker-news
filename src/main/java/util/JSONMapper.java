@@ -7,8 +7,8 @@ import org.neo4j.driver.v1.Record;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import datastructures.PostBody;
 import datastructures.User;
+import datastructures.post.PostBody;
 
 public class JSONMapper {
 	

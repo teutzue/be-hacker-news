@@ -1,8 +1,11 @@
 package db.neo4j;
 
-import datastructures.Post;
-import datastructures.PostBody;
-import datastructures.User;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.neo4j.driver.v1.Record;
@@ -12,12 +15,13 @@ import org.neo4j.driver.v1.Values;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.exceptions.NoSuchRecordException;
 import org.neo4j.driver.v1.types.Node;
-import util.StatusMonitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import datastructures.User;
+import datastructures.WholeStoryDTO;
+import datastructures.post.CompletePostDTO;
+import datastructures.post.Post;
+import datastructures.post.PostBody;
+import util.StatusMonitor;
 
 public class MyNeo4jMapper implements Neo4jQueryInterface {
 
@@ -62,55 +66,32 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		return true;
 	}
 	
-//	public void getComments(int hanesst_id) {
-//		
-//		HashMap<Integer, PostBody> commentsMap = new HashMap<>();
-//				
-//		Session s = connector.getSession();
-//		StatementResult result = s.run(getCommentsQuery(hanesst_id));
-//		
-//		Record record = result.next();
-//		
-//		Map<String, Object> map = record.asMap();
-//		
-//		Node mainStory = (Node) map.get("story");
-//		List<Node> comments = (List<Node>) map.get("comments");
-//		
-//		for (Node node : comments) {
-//			PostBody comment = new PostBody(node);
-//			commentsMap.put(comment.getPost_parent(), comment);
-//			//System.out.println((new PostBody(node)).toString());
-//		}
-//		
-//		createHiererchy(hanesst_id, commentsMap);
-//		
-//		Long count = (Long) map.get("numberOfcomments");
-//		
-//		PostBody pb = new PostBody(mainStory);
-//		
-//		System.out.println(count);
-//		System.out.println(pb.toString());
-//		
-//		
-//		
-//		Set<String> keys = map.keySet();
-//		
-//		for (String string : keys) {
-//			System.out.println(string);
-//		}
-//		
-//		s.close();
-//	}
-	
-	private void createHiererchy(int topHanesst_id, ArrayList<PostBody> comments, PostBody topPostBody ) {
-		Post topPost = new Post(null, topPostBody);
+	public WholeStoryDTO getComments(int hanesst_id) {
+		List<PostBody> pbl = new ArrayList<>();				
+		Session s = connector.getSession();
+		StatementResult result = s.run(getCommentsQuery(hanesst_id));
 		
-		while (!comments.isEmpty())
-		{
+		Record record = result.next();
+		
+		Map<String, Object> map = record.asMap();
+		
+		Node storyNode = (Node) map.get("story");
+		List<Node> comments = (List<Node>) map.get("comments");
+		
+		Long count = (Long) map.get("numberOfcomments");
+		PostBody story = new PostBody(storyNode);
+		for (Node node : comments) {
+			
+			pbl.add(new PostBody(node));
 			
 		}
+		s.close();
+		
+		return new WholeStoryDTO(story,pbl,count);
 	}
+	
 
+	// @TODO phase it out
     public List<PostBody> getPostsLimit(int skip, int limit) {
         Session s = connector.getSession();
         if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
@@ -121,7 +102,34 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
         s.close();
         return list;
     }
+    
+    // Latest version
+    public List<CompletePostDTO> getPostsNewLimit(int skip, int limit) {
+        Session s = connector.getSession();
+        if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
 
+        StatementResult result = s.run(getPostsLimitNewQuery(skip, limit));
+        
+        List<CompletePostDTO> completeList = new ArrayList<CompletePostDTO>();
+        
+        while (result.hasNext()) {
+
+			Record record = result.next();
+			Node n = record.get("post").asNode();
+			Long count = record.get("numberOfcomments").asLong();
+			
+			CompletePostDTO completePost = new CompletePostDTO(new PostBody(n), count);
+			
+
+			completeList.add(completePost);
+		}
+        
+
+        s.close();
+        return completeList;
+    }
+
+    // @TODO phase it out
     public List<PostBody> getPostsLimit(int limit) {
         Session s = connector.getSession();
         if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");

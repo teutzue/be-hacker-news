@@ -1,22 +1,30 @@
 package api;
 
-import datastructures.PostBody;
-import datastructures.User;
-import db.neo4j.MyNeo4jMapper;
-import io.prometheus.client.Summary;
-import io.prometheus.client.exporter.MetricsServlet;
-import io.prometheus.client.hotspot.DefaultExports;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import datastructures.User;
+import datastructures.WholeStoryDTO;
+import datastructures.post.CompletePostDTO;
+import datastructures.post.PostBody;
+import db.neo4j.MyNeo4jMapper;
+import io.prometheus.client.Summary;
+import io.prometheus.client.exporter.MetricsServlet;
+import io.prometheus.client.hotspot.DefaultExports;
 import util.JSONMapper;
 import util.StatusMonitor;
-
-import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -65,9 +73,9 @@ public class Api {
 		return ResponseEntity.status(423).body("Application is under update");
 	}
 
-	// @todo: Change path name
+	
 	@RequestMapping(path = "/getPostsNew", method = RequestMethod.GET)
-	public List<PostBody> getPosts(
+	public List<PostBody> getPostsWithSkip(
             @RequestParam(value = "page") int page,
 			@RequestParam(value = "limit") int limit) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
@@ -80,6 +88,27 @@ public class Api {
         int skip = limit * page;
 
         List<PostBody> posts = mapper.getPostsLimit(skip, limit);
+
+        String input = "{page: "+ page + ", limit: " + limit + "}";
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName, input);
+		return posts;
+	}
+	
+	@RequestMapping(path = "/getPostsNewNew", method = RequestMethod.GET)
+	public List<CompletePostDTO> getPostsWithCount(
+            @RequestParam(value = "page") int page,
+			@RequestParam(value = "limit") int limit) {
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		StatusMonitor.incrementCounter();
+
+		/*
+        When page is 0, then we skip 0 posts.
+        Otherwise we skip multiplicity of limit posts (by default 30 posts are shown at once)
+        */
+        int skip = limit * page;
+
+        List<CompletePostDTO> posts = mapper.getPostsNewLimit(skip, limit);
 
         String input = "{page: "+ page + ", limit: " + limit + "}";
         String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
@@ -110,6 +139,18 @@ public class Api {
 
         String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
         checkSpeed(requestTimer.observeDuration(),methodName,site);
+		return posts;
+	}
+	
+	@RequestMapping(path = "/getComments", method = RequestMethod.GET)
+	public WholeStoryDTO getComments(@RequestParam(value = "hanesst_id") Integer hanesst_id) {
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+		StatusMonitor.incrementCounter();
+
+		WholeStoryDTO posts = mapper.getComments(hanesst_id);
+
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName,hanesst_id);
 		return posts;
 	}
 

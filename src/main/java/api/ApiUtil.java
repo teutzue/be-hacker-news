@@ -1,7 +1,7 @@
 package api;
 
-import datastructures.PostBody;
 import datastructures.User;
+import datastructures.post.PostBody;
 
 public class ApiUtil {
 
