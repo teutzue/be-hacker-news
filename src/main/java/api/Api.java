@@ -214,7 +214,7 @@ public class Api {
 
 		return StatusMonitor.getLastPostId();
 	}
-	
+	/*
 	@RequestMapping("/changeStatus/update")
 	public boolean setUpdate() {
 
@@ -230,7 +230,7 @@ public class Api {
 		logger.warn("Status has been changed to alive. Somebody might be a dick");
 		return true;
 	}
-	
+	*/
 
 	@Bean
 	ServletRegistrationBean servletRegistrationBean() {
