@@ -11,7 +11,7 @@
 		</Console>
 
 		<Socket name="socket" host="185.14.185.204" port="5000">
-			<JsonLayout properties="true" />
+			<JsonLayout properties="true" complete="true" compact="true" eventEol="true"/>
 		</Socket>
 
 </Appenders>
