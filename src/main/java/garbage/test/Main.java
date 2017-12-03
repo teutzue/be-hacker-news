@@ -10,8 +10,9 @@ public class Main {
 		MyNeo4jMapper mapper = new MyNeo4jMapper();
 
 		//mapper.getComments(445);
+		
 
-		System.out.println();
+		System.out.println(mapper.editUser("pg", "lol6", "lol7"));
 		
 
 	}
