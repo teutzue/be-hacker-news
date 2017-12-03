@@ -23,10 +23,11 @@ import datastructures.post.Post;
 import datastructures.post.PostBody;
 import util.StatusMonitor;
 
-public class MyNeo4jMapper implements Neo4jQueryInterface {
+public class MyNeo4jMapper {
 
 	private Neo4jConnector connector = new Neo4jConnector();
 	private Neo4jUtil util = new Neo4jUtil();
+	private final Neo4jQuery query = new Neo4jQuery();
 	private static final Logger logger = LogManager.getLogger("logstash");
 
 	public boolean persistPost(PostBody pb) {
@@ -37,12 +38,11 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 		map.put("post_text", pb.getPost_text());
 		map.put("post_title", pb.getPost_title());
-		
-		if (pb.getHanesst_id()==0 || pb.getHanesst_id()==null)
-		{
-			StatementResult result=s.run(generateHanesst_idQuery());
+
+		if (pb.getHanesst_id() == 0 || pb.getHanesst_id() == null) {
+			StatementResult result = s.run(query.generateHanesst_idQuery());
 			Record record = result.single();
-			
+
 			pb.setHanesst_id(record.get("id").asInt());
 		}
 		map.put("hanesst_id", pb.getHanesst_id());
@@ -52,99 +52,74 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		map.put("pwd_hash", pb.getPwd_hash());
 		map.put("post_url", pb.getPost_url());
 		map.put("timestamp", pb.getTimestamp().doubleValue());
-		
-		if (pb.getPost_parent()==-1) s.run(addPostQuery(), map);
-		else s.run(addCommentQuery(), map);
-		
-		
+
+		if (pb.getPost_parent() == -1)
+			s.run(query.addPostQuery(), map);
+		else
+			s.run(query.addCommentQuery(), map);
+
 		s.close();
 
 		StatusMonitor.setLastPostId(pb.getHanesst_id());
-		//logger.info("Post: "+pb.getPost_title()+" of user "+pb.getUsername()+" has been created successfully");
-		
+		// logger.info("Post: "+pb.getPost_title()+" of user "+pb.getUsername()+" has
+		// been created successfully");
 
 		return true;
 	}
-	
+
 	public WholeStoryDTO getComments(int hanesst_id) {
-		List<PostBody> pbl = new ArrayList<>();				
+		List<PostBody> pbl = new ArrayList<>();
 		Session s = connector.getSession();
-		StatementResult result = s.run(getCommentsQuery(hanesst_id));
-		
+		StatementResult result = s.run(query.getCommentsQuery(hanesst_id));
+
 		Record record = result.next();
-		
+
 		Map<String, Object> map = record.asMap();
-		
+
 		Node storyNode = (Node) map.get("story");
 		List<Node> comments = (List<Node>) map.get("comments");
-		
+
 		Long count = (Long) map.get("numberOfcomments");
 		PostBody story = new PostBody(storyNode);
 		for (Node node : comments) {
-			
+
 			pbl.add(new PostBody(node));
-			
+
 		}
 		s.close();
-		
-		return new WholeStoryDTO(story,pbl,count);
+
+		return new WholeStoryDTO(story, pbl, count);
 	}
-	
 
-	// @TODO phase it out
-    public List<PostBody> getPostsLimit(int skip, int limit) {
-        Session s = connector.getSession();
-        if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
+	// Latest version
+	public List<CompletePostDTO> getPostsNewLimit(int skip, int limit) {
+		Session s = connector.getSession();
+		if (limit >= 9999)
+			logger.warn("Very heavy request. Stop being a dick.");
 
-        StatementResult result = s.run(getPostsLimitQuery(skip, limit));
-        List<PostBody> list = util.castMultiplePostNodesToList(result);
+		StatementResult result = s.run(query.getPostsLimitNewQuery(skip, limit));
 
-        s.close();
-        return list;
-    }
-    
-    // Latest version
-    public List<CompletePostDTO> getPostsNewLimit(int skip, int limit) {
-        Session s = connector.getSession();
-        if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
+		List<CompletePostDTO> completeList = new ArrayList<CompletePostDTO>();
 
-        StatementResult result = s.run(getPostsLimitNewQuery(skip, limit));
-        
-        List<CompletePostDTO> completeList = new ArrayList<CompletePostDTO>();
-        
-        while (result.hasNext()) {
+		while (result.hasNext()) {
 
 			Record record = result.next();
 			Node n = record.get("post").asNode();
 			Long count = record.get("numberOfcomments").asLong();
-			
+
 			CompletePostDTO completePost = new CompletePostDTO(new PostBody(n), count);
-			
 
 			completeList.add(completePost);
 		}
-        
 
-        s.close();
-        return completeList;
-    }
-
-    // @TODO phase it out
-    public List<PostBody> getPostsLimit(int limit) {
-        Session s = connector.getSession();
-        if (limit>=9999) logger.warn("Very heavy request. Stop being a dick.");
-
-        StatementResult result = s.run(getPostsLimitQuery(limit));
-        List<PostBody> list = util.castMultiplePostNodesToList(result);
-
-        s.close();
-        return list;
-    }
+		s.close();
+		return completeList;
+	}
 
 	public List<PostBody> getPostsBySite(String site) {
 		Session s = connector.getSession();
 
-		StatementResult result = s.run(getPostsBySiteQuery(), Values.parameters("site", site));
+		StatementResult result = s.run(query.getPostsBySiteQuery(), Values.parameters("site", site));
 		List<PostBody> list = util.castMultiplePostNodesToList(result);
 
 		s.close();
@@ -160,17 +135,32 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		map.put("user_pwd", u.getUser_pwd());
 
 		try {
-			s.run(addUserQuery(), map);
-			s.close();
-			
+			s.run(query.addUserQuery(), map);
 		} catch (ClientException e) {
 			// handle it properly
-			logger.error(e+" "+e.code());
-			
+			logger.error(e + " " + e.code());
+
 			return null;
+		} finally {
+			s.close();
 		}
 
-		logger.info("User "+u.getUser_name()+" has been created");
+		logger.info("User " + u.getUser_name() + " has been created");
+		return u;
+	}
+
+	public User editUser(String username, String oldPassword, String newPassword) {
+
+		Session s = connector.getSession();
+
+		StatementResult result = s.run(query.editUser(username, oldPassword, newPassword));
+		User u = null;
+		if (result.hasNext()) {
+			u = new User(username, newPassword);
+			logger.info("User " + username + " changed password");
+		}
+		s.close();
+
 		return u;
 	}
 
@@ -182,7 +172,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 		map.put("user_name", u.getUser_name());
 		map.put("user_pwd", u.getUser_pwd());
 
-		StatementResult result = s.run(logInQuery(), map);
+		StatementResult result = s.run(query.logInQuery(), map);
 
 		Record record = null;
 		try {
@@ -192,7 +182,7 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 			s.close();
 			e.printStackTrace();
 			return null;
-		}
+		} 
 
 		Node n = record.get("u").asNode();
 		Map<?, ?> resultMap = n.asMap();
@@ -203,8 +193,8 @@ public class MyNeo4jMapper implements Neo4jQueryInterface {
 
 		if (!u.getUser_name().equals(null) && !u.getUser_pwd().equals(null)) {
 			s.close();
-			
-			logger.info("User "+u.getUser_name()+" has been logged in!");
+
+			logger.info("User " + u.getUser_name() + " has been logged in!");
 			return u;
 		}
 

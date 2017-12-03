@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import datastructures.EditUserDTO;
 import datastructures.User;
 import datastructures.WholeStoryDTO;
 import datastructures.post.CompletePostDTO;
@@ -52,7 +53,7 @@ public class Api {
 			Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 			StatusMonitor.incrementCounter();
 
-			PostBody post = jsonmap.jsonToPostBody(json);
+			PostBody post = jsonmap.jsonToType(PostBody.class, json);
 			if (!util.validatePost(post)) {
 				requestTimer.observeDuration();
 				logger.warn("This request is wrong: "+json);
@@ -72,30 +73,8 @@ public class Api {
 		}
 		return ResponseEntity.status(423).body("Application is under update");
 	}
-
 	
-	@RequestMapping(path = "/getPostsNew", method = RequestMethod.GET)
-	public List<PostBody> getPostsWithSkip(
-            @RequestParam(value = "page") int page,
-			@RequestParam(value = "limit") int limit) {
-		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
-		StatusMonitor.incrementCounter();
-
-		/*
-        When page is 0, then we skip 0 posts.
-        Otherwise we skip multiplicity of limit posts (by default 30 posts are shown at once)
-        */
-        int skip = limit * page;
-
-        List<PostBody> posts = mapper.getPostsLimit(skip, limit);
-
-        String input = "{page: "+ page + ", limit: " + limit + "}";
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName, input);
-		return posts;
-	}
-	
-	@RequestMapping(path = "/getPostsNewNew", method = RequestMethod.GET)
+	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
 	public List<CompletePostDTO> getPostsWithCount(
             @RequestParam(value = "page") int page,
 			@RequestParam(value = "limit") int limit) {
@@ -115,20 +94,6 @@ public class Api {
         checkSpeed(requestTimer.observeDuration(),methodName, input);
 		return posts;
 	}
-
-    // @todo: To be removed. This will be deprecated after the frontend start using the above endpoint.
-    @RequestMapping(path = "/getPosts", method = RequestMethod.GET)
-    public List<PostBody> getPosts(
-            @RequestParam(value = "limit") int limit) {
-        Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
-        StatusMonitor.incrementCounter();
-
-        List<PostBody> posts = mapper.getPostsLimit(limit);
-
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName, limit);
-        return posts;
-    }
 
 	@RequestMapping(path = "/from", method = RequestMethod.GET)
 	public List<PostBody> getPostsBySite(@RequestParam(value = "site") String site) {
@@ -161,7 +126,7 @@ public class Api {
 
 			StatusMonitor.incrementCounter();
 
-			User u = jsonmap.jsonToUser(json);
+			User u = jsonmap.jsonToType(User.class, json);
 			
 			if (!util.validateUser(u)) {
 				requestTimer.observeDuration();
@@ -184,13 +149,28 @@ public class Api {
 		return ResponseEntity.status(500).body(null);
 	}
 
+	@RequestMapping(path = "/editUser", method = RequestMethod.PUT)
+	public User changeUser(@RequestBody String json) {
+		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+
+		StatusMonitor.incrementCounter();
+
+		EditUserDTO user = jsonmap.jsonToType(EditUserDTO.class, json);
+		User loggedUser = mapper.editUser(user.getUser_name(), user.getOldUser_pwd(), user.getNewUser_pwd());
+
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        checkSpeed(requestTimer.observeDuration(),methodName, json);
+
+		return loggedUser;
+	}
+	
 	@RequestMapping(path = "/logIn", method = RequestMethod.POST)
 	public User logIn(@RequestBody String json) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 
 		StatusMonitor.incrementCounter();
 
-		User u = jsonmap.jsonToUser(json);
+		User u = jsonmap.jsonToType(User.class, json);
 		User loggedUser = mapper.logIn(u);
 
         String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
@@ -198,6 +178,7 @@ public class Api {
 
 		return loggedUser;
 	}
+
 
 	@RequestMapping(path = "/status", method = RequestMethod.GET)
 	public String status() {

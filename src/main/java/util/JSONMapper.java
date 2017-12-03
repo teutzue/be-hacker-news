@@ -7,39 +7,27 @@ import org.neo4j.driver.v1.Record;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import datastructures.EditUserDTO;
 import datastructures.User;
 import datastructures.post.PostBody;
 
 public class JSONMapper {
 	
-	public PostBody jsonToPostBody(String json) {
+	//Generics are for real programmers
+	public <T> T jsonToType(Class<T> typeParameterClass, String json) {
 		ObjectMapper om = new ObjectMapper();
-	
-		PostBody pb = null;
+		
+		T output = null;
 		try {
-			pb = om.readValue(json, PostBody.class);
+			output = om.readValue(json, typeParameterClass);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return pb;
-
+		return output;
 	}
 	
-	public User jsonToUser(String json) {
-		ObjectMapper om = new ObjectMapper();
-		User u = null;
-		try {
-			JsonNode jsonNode = om.readTree(json);
-			u = om.readValue(json, User.class);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return u;
-
-	}
 	
 	public String recordToJson (Record r) {
 		
