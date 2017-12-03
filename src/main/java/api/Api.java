@@ -1,6 +1,9 @@
 package api;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,8 +37,9 @@ public class Api {
 	private MyNeo4jMapper mapper = new MyNeo4jMapper();
 	private JSONMapper jsonmap = new JSONMapper();
 	private ApiUtil util = new ApiUtil();
-	
-    private static final Logger logger = LogManager.getLogger("logstash");
+	private ExecutorService threads = Executors.newCachedThreadPool();
+
+	private static final Logger logger = LogManager.getLogger("logstash");
 
 	@Autowired
 	public Api() {
@@ -47,8 +51,39 @@ public class Api {
 		return "java call";
 	}
 
+	// @RequestMapping(path = "/post", method = RequestMethod.POST)
+	// public ResponseEntity<String> post(@RequestBody String json) {
+	// if (StatusMonitor.isOperational()) {
+	// Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
+	// StatusMonitor.incrementCounter();
+	//
+	// PostBody post = jsonmap.jsonToType(PostBody.class, json);
+	// if (!util.validatePost(post)) {
+	// requestTimer.observeDuration();
+	// logger.warn("This request is wrong: "+json);
+	// return ResponseEntity.status(400).body("Request is invalid. Check Hanesst_id,
+	// post_parent, "
+	// + "post_title, post_type, pwd_hash and username ");
+	// }
+	// post.setTimestamp(System.currentTimeMillis());
+	//
+	// mapper.persistPost(post);
+	//
+	// logger.info("Created post with "+post.getPost_title()+" title and
+	// "+post.getHanesst_id()+" id");
+	//
+	// String methodName =
+	// Thread.currentThread().getStackTrace()[1].getMethodName();
+	// checkSpeed(requestTimer.observeDuration(),methodName, json);
+	// return ResponseEntity.status(201).body((post.getPost_parent() + " " +
+	// post.getPost_url() + " " + post.getUsername() + " "
+	// + StatusMonitor.getLastPostId()));
+	// }
+	// return ResponseEntity.status(423).body("Application is under update");
+	// }
+
 	@RequestMapping(path = "/post", method = RequestMethod.POST)
-	public ResponseEntity<String> post(@RequestBody String json) {
+	public ResponseEntity<String> post2(@RequestBody String json) {
 		if (StatusMonitor.isOperational()) {
 			Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 			StatusMonitor.incrementCounter();
@@ -56,42 +91,39 @@ public class Api {
 			PostBody post = jsonmap.jsonToType(PostBody.class, json);
 			if (!util.validatePost(post)) {
 				requestTimer.observeDuration();
-				logger.warn("This request is wrong: "+json);
+				logger.warn("This request is wrong: " + json);
 				return ResponseEntity.status(400).body("Request is invalid. Check Hanesst_id, post_parent, "
 						+ "post_title, post_type, pwd_hash and username ");
 			}
 			post.setTimestamp(System.currentTimeMillis());
-			
-			mapper.persistPost(post);
 
-			logger.info("Created post with "+post.getPost_title()+" title and "+post.getHanesst_id()+" id");
-			
-            String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-            checkSpeed(requestTimer.observeDuration(),methodName, json);
-			return ResponseEntity.status(201).body((post.getPost_parent() + " " + post.getPost_url() + " " + post.getUsername() + " "
-					+ StatusMonitor.getLastPostId()));
+			threads.execute(() -> mapper.persistPost(post));
+
+			String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+			checkSpeed(requestTimer.observeDuration(), methodName, json);
+			return ResponseEntity.status(201).body((post.getPost_parent() + " " + post.getPost_url() + " "
+					+ post.getUsername() + " " + StatusMonitor.getLastPostId()));
 		}
 		return ResponseEntity.status(423).body("Application is under update");
 	}
-	
+
 	@RequestMapping(path = "/getPosts", method = RequestMethod.GET)
-	public List<CompletePostDTO> getPostsWithCount(
-            @RequestParam(value = "page") int page,
+	public List<CompletePostDTO> getPostsWithCount(@RequestParam(value = "page") int page,
 			@RequestParam(value = "limit") int limit) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
 		StatusMonitor.incrementCounter();
 
 		/*
-        When page is 0, then we skip 0 posts.
-        Otherwise we skip multiplicity of limit posts (by default 30 posts are shown at once)
-        */
-        int skip = limit * page;
+		 * When page is 0, then we skip 0 posts. Otherwise we skip multiplicity of limit
+		 * posts (by default 30 posts are shown at once)
+		 */
+		int skip = limit * page;
 
-        List<CompletePostDTO> posts = mapper.getPostsNewLimit(skip, limit);
+		List<CompletePostDTO> posts = mapper.getPostsNewLimit(skip, limit);
 
-        String input = "{page: "+ page + ", limit: " + limit + "}";
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName, input);
+		String input = "{page: " + page + ", limit: " + limit + "}";
+		String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+		checkSpeed(requestTimer.observeDuration(), methodName, input);
 		return posts;
 	}
 
@@ -102,11 +134,11 @@ public class Api {
 
 		List<PostBody> posts = mapper.getPostsBySite(site);
 
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName,site);
+		String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+		checkSpeed(requestTimer.observeDuration(), methodName, site);
 		return posts;
 	}
-	
+
 	@RequestMapping(path = "/getComments", method = RequestMethod.GET)
 	public WholeStoryDTO getComments(@RequestParam(value = "hanesst_id") Integer hanesst_id) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
@@ -114,8 +146,8 @@ public class Api {
 
 		WholeStoryDTO posts = mapper.getComments(hanesst_id);
 
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName,hanesst_id);
+		String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+		checkSpeed(requestTimer.observeDuration(), methodName, hanesst_id);
 		return posts;
 	}
 
@@ -127,23 +159,22 @@ public class Api {
 			StatusMonitor.incrementCounter();
 
 			User u = jsonmap.jsonToType(User.class, json);
-			
+
 			if (!util.validateUser(u)) {
 				requestTimer.observeDuration();
 				return ResponseEntity.status(400).body(u);
 			}
 
 			User addedUser = mapper.addUser(u);
-			if (addedUser==null)
-			{
+			if (addedUser == null) {
 				return ResponseEntity.status(400).body(u);
 			}
-			
-            String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-            checkSpeed(requestTimer.observeDuration(),methodName,json);
-			
-			logger.info("Created user with "+addedUser.getUser_name()+" username");
-			
+
+			String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+			checkSpeed(requestTimer.observeDuration(), methodName, json);
+
+			logger.info("Created user with " + addedUser.getUser_name() + " username");
+
 			return ResponseEntity.status(201).body(u);
 		}
 		return ResponseEntity.status(500).body(null);
@@ -158,12 +189,12 @@ public class Api {
 		EditUserDTO user = jsonmap.jsonToType(EditUserDTO.class, json);
 		User loggedUser = mapper.editUser(user.getUser_name(), user.getOldUser_pwd(), user.getNewUser_pwd());
 
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName, json);
+		String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+		checkSpeed(requestTimer.observeDuration(), methodName, json);
 
 		return loggedUser;
 	}
-	
+
 	@RequestMapping(path = "/logIn", method = RequestMethod.POST)
 	public User logIn(@RequestBody String json) {
 		Summary.Timer requestTimer = StatusMonitor.getRequestlatency().startTimer();
@@ -173,18 +204,15 @@ public class Api {
 		User u = jsonmap.jsonToType(User.class, json);
 		User loggedUser = mapper.logIn(u);
 
-        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        checkSpeed(requestTimer.observeDuration(),methodName, json);
+		String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+		checkSpeed(requestTimer.observeDuration(), methodName, json);
 
 		return loggedUser;
 	}
 
-
 	@RequestMapping(path = "/status", method = RequestMethod.GET)
 	public String status() {
 		StatusMonitor.incrementCounter();
-		
-		
 
 		return StatusMonitor.getStatus();
 	}
@@ -195,7 +223,7 @@ public class Api {
 
 		return StatusMonitor.getLastPostId();
 	}
-	/*
+
 	@RequestMapping("/changeStatus/update")
 	public boolean setUpdate() {
 
@@ -203,7 +231,7 @@ public class Api {
 		logger.warn("Status has been changed to update. Somebody might be a dick.");
 		return true;
 	}
-	
+
 	@RequestMapping("/changeStatus/alive")
 	public boolean setAlive() {
 
@@ -211,18 +239,18 @@ public class Api {
 		logger.warn("Status has been changed to alive. Somebody might be a dick");
 		return true;
 	}
-	*/
 
 	@Bean
 	ServletRegistrationBean servletRegistrationBean() {
 		DefaultExports.initialize();
 		return new ServletRegistrationBean(new MetricsServlet(), "/metrics");
 	}
-	
+
 	private void checkSpeed(Double speed, String operationName, Object input) {
-		speed=speed*1000;
-		if (speed>300) logger.warn("Speed of "+speed+" ms occured in "+
-				operationName+" with following input: "+input.toString()+". This breaches the SLA of max. 300ms");
+		speed = speed * 1000;
+		if (speed > 300)
+			logger.warn("Speed of " + speed + " ms occured in " + operationName + " with following input: "
+					+ input.toString() + ". This breaches the SLA of max. 300ms");
 	}
 
 }

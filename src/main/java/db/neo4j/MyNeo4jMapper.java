@@ -45,6 +45,7 @@ public class MyNeo4jMapper {
 
 			pb.setHanesst_id(record.get("id").asInt());
 		}
+		System.out.println(pb.getTimestamp()+pb.getHanesst_id());
 		map.put("hanesst_id", pb.getHanesst_id());
 		map.put("post_type", pb.getPost_type());
 		map.put("post_parent", pb.getPost_parent());
@@ -52,6 +53,7 @@ public class MyNeo4jMapper {
 		map.put("pwd_hash", pb.getPwd_hash());
 		map.put("post_url", pb.getPost_url());
 		map.put("timestamp", pb.getTimestamp().doubleValue());
+		
 
 		if (pb.getPost_parent() == -1)
 			s.run(query.addPostQuery(), map);
@@ -61,6 +63,7 @@ public class MyNeo4jMapper {
 		s.close();
 
 		StatusMonitor.setLastPostId(pb.getHanesst_id());
+		logger.info("Created post with "+pb.getPost_title()+" title and "+pb.getHanesst_id()+" id");
 		// logger.info("Post: "+pb.getPost_title()+" of user "+pb.getUsername()+" has
 		// been created successfully");
 
